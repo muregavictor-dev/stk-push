@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MERISON Secure Checkout</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      color: #333;
+      padding: 2rem;
+      text-align: center;
+    }
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      max-width: 500px;
+      margin: auto;
+    }
+    .btn {
+      display: inline-block;
+      background: #28a745;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    .note {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to MERISON Secure Checkout</h1>
+    <form id="mpesaForm">
+      <input type="text" id="phone" placeholder="07xx xxx xxx" required />
+      <button type="submit" class="btn">Pay with M-Pesa</button>
+    </form>
+    <div id="response"></div>
+  </div>
+
+  <script>
+    document.getElementById("mpesaForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const phone = document.getElementById("phone").value;
+
+      const response = await fetch("/api/mpesa-stkpush", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phone }),
+      });
+
+      const data = await response.json();
+      document.getElementById("response").innerText = data.message;
+    });
+  </script>
+</body>
+</html>
