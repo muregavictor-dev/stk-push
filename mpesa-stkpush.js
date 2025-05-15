@@ -1,60 +1,51 @@
-const axios = require('axios');
+import axios from 'axios';
 
-module.exports = async (req, res) => {
-    // Ensure the request method is POST
-    if (req.method !== 'POST') {
-        return res.status(405).json({ message: 'Method Not Allowed' });
-    }
+export default async function handler(req, res) {
+  if (req.method !== 'POST') return res.status(405).end('Method Not Allowed');
 
-    const { phone } = req.body; // Get the phone number from the request body
+  const { phone } = req.body;
+  const consumerKey = process.env.DARAJA_CONSUMER_KEY;
+  const consumerSecret = process.env.DARAJA_CONSUMER_SECRET;
+  const shortcode = process.env.DARAJA_SHORTCODE;
+  const passkey = process.env.DARAJA_PASSKEY;
 
-    // M-Pesa API credentials
-    const consumerKey = 'OCGEFtoGuFoEzXxqpspVHsNer1wglkuVoGcaydRAmPD1mFB3';
-    const consumerSecret = 'dhZ7FWpuSrEr7G2ugM5eLt3QSThRL157oXbpFqSj1d0iXwdfRhKdnJ14Wi5hyAO9';
-    const shortcode = 'YOUR_SHORTCODE';
-    const passkey = 'YOUR_PASSKEY';
-    const lipaNaMpesaOnlineURL = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'; // Change for live
+  const auth = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
 
-    try {
-        // Step 1: Get an access token
-        const tokenResponse = await axios.get('https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials', {
-            auth: {
-                username: consumerKey,
-                password: consumerSecret,
-            },
-        });
+  try {
+    const { data: tokenData } = await axios.get(
+      'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+      { headers: { Authorization: `Basic ${auth}` } }
+    );
 
-        const accessToken = tokenResponse.data.access_token;
+    const access_token = tokenData.access_token;
+    const timestamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);
+    const password = Buffer.from(`${shortcode}${passkey}${timestamp}`).toString('base64');
 
-        // Step 2: Prepare the STK Push request payload
-        const timestamp = new Date().toISOString().replace(/[-T:\.Z]/g, '').slice(0, 14); // Format timestamp as yyyyMMddHHmmss
-        const password = Buffer.from(shortcode + passkey + timestamp).toString('base64');
+    const { data: stkData } = await axios.post(
+      'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+      {
+        BusinessShortCode: shortcode,
+        Password: password,
+        Timestamp: timestamp,
+        TransactionType: 'CustomerPayBillOnline',
+        Amount: 10,
+        PartyA: phone,
+        PartyB: shortcode,
+        PhoneNumber: phone,
+        CallBackURL: 'https://yourdomain.com/api/mpesa-callback',
+        AccountReference: 'MERISON',
+        TransactionDesc: 'Payment for service'
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
 
-        const payload = {
-            BusinessShortCode: shortcode,
-            Password: password,
-            LipaNaMpesaOnline: 'CustomerPayBillOnline',
-            Amount: 10, // Payment amount (you can change this)
-            PartyA: phone, // Phone number of the user
-            PartyB: 25412127975,
-            PhoneNumber: phone,
-            CallBackURL: 'https://yourdomain.com/callback', // Your callback URL for response
-            AccountReference: 'MERISON', // Reference for the payment
-            TransactionDesc: 'Payment for security services',
-        };
+    res.status(200).json(stkData);
+  } catch (err) {
+    res.status(500).json({ error: err.response?.data || err.message });
+  }
+}
 
-        // Step 3: Initiate the STK Push request
-        const stkPushResponse = await axios.post(lipaNaMpesaOnlineURL, payload, {
-            headers: {
-                Authorization: `Bearer ${accessToken}`,
-                'Content-Type': 'application/json',
-            },
-        });
-
-        // Send response to frontend
-        res.status(200).json({ message: 'STK Push initiated. Check your phone for the payment prompt.' });
-    } catch (error) {
-        console.error('Error initiating STK Push:', error);
-        res.status(500).json({ message: 'Error initiating payment. Please try again.' });
-    }
-};
