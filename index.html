@@ -66,3 +66,41 @@
   </script>
 </body>
 </html>
+
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Merison Payment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 100px; }
+    input, button { padding: 10px; margin: 10px; font-size: 16px; }
+    button { background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #45a049; }
+  </style>
+</head>
+<body>
+  <h2>Pay with M-Pesa</h2>
+  <input type="text" id="phone" placeholder="Enter Safaricom number (e.g. 2547...)" />
+  <button onclick="payNow()">Pay KES 10</button>
+  <p id="status"></p>
+
+  <script>
+    async function payNow() {
+      const phone = document.getElementById("phone").value;
+      document.getElementById("status").textContent = "Processing...";
+      const response = await fetch("/api/stk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+      });
+
+      const data = await response.json();
+      document.getElementById("status").textContent =
+        data.ResponseDescription || data.error || "Something went wrong!";
+    }
+  </script>
+</body>
+</html>
