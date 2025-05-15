@@ -30,9 +30,9 @@ export default async function handler(req, res) {
         TransactionType: 'CustomerPayBillOnline',
         Amount: 10,
         PartyA: phone,
-        PartyB: shortcode,
+        PartyB: 174379,
         PhoneNumber: phone,
-        CallBackURL: 'https://yourdomain.com/api/mpesa-callback',
+        CallBackURL: 'https://stk-push-phi.vercel.app/',
         AccountReference: 'MERISON',
         TransactionDesc: 'Payment for service'
       },
