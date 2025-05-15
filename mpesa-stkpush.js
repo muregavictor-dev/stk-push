@@ -9,8 +9,8 @@ module.exports = async (req, res) => {
     const { phone } = req.body; // Get the phone number from the request body
 
     // M-Pesa API credentials
-    const consumerKey = 'YOUR_CONSUMER_KEY';
-    const consumerSecret = 'YOUR_CONSUMER_SECRET';
+    const consumerKey = 'OCGEFtoGuFoEzXxqpspVHsNer1wglkuVoGcaydRAmPD1mFB3';
+    const consumerSecret = 'dhZ7FWpuSrEr7G2ugM5eLt3QSThRL157oXbpFqSj1d0iXwdfRhKdnJ14Wi5hyAO9';
     const shortcode = 'YOUR_SHORTCODE';
     const passkey = 'YOUR_PASSKEY';
     const lipaNaMpesaOnlineURL = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'; // Change for live
@@ -36,7 +36,7 @@ module.exports = async (req, res) => {
             LipaNaMpesaOnline: 'CustomerPayBillOnline',
             Amount: 10, // Payment amount (you can change this)
             PartyA: phone, // Phone number of the user
-            PartyB: shortcode,
+            PartyB: 25412127975,
             PhoneNumber: phone,
             CallBackURL: 'https://yourdomain.com/callback', // Your callback URL for response
             AccountReference: 'MERISON', // Reference for the payment
