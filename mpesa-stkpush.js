@@ -32,7 +32,7 @@ export default async function handler(req, res) {
         PartyA: phone,
         PartyB: 174379,
         PhoneNumber: phone,
-        CallBackURL: 'https://stk-push-phi.vercel.app/',
+        CallBackURL: 'https://your-vercel-app.vercel.app/api/mpesa-callback',
         AccountReference: 'MERISON',
         TransactionDesc: 'Payment for service'
       },
